@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 )
 
@@ -77,9 +78,88 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 func checkFakeGiftLink(l string) bool {
 	// we only care about the domain, not the path after
 	u, _ := url.Parse(l)
-	similarity := util.CompareTwoLinks("discord.gifts", u.Host)
 
-	if similarity > 0.4 && similarity != 1 {
+	// firstly, return no if message is definitely from a Discord owned domain
+	dcDomains := map[string]bool{
+		"discord.com":       true,
+		"discord.gg":        true,
+		"discord.media":     true,
+		"discordapp.com":    true,
+		"discordapp.net":    true,
+		"discordstatus.com": true,
+		"discord.gift":      true,
+	}
+	if dcDomains[u.Host] {
+		return false
+	}
+
+	// secondly, check if message contains similar spellings of discord
+	spellings := []string{
+		"discord",
+		"dlscord",
+		"d1scord",
+		"discod",
+		"disc0rd",
+		"Diskord",
+		"Hiscord",
+		"Dhscord",
+		"Dihcord",
+		"Dishord",
+		"Dischrd",
+		"Discohd",
+		"Discorh",
+		"Discod1",
+		"Iscord1",
+		"Discor1",
+		"Eiscord1",
+		"Descord1",
+		"Diecord1",
+		"Diseord1",
+		"Discerd1",
+		"Discore1",
+		"Diccord1",
+		"Dyscord2",
+		"Dscord2",
+		"Dicord2",
+		"Ddiscord2",
+		"Discordd2",
+		"Dizcord2",
+		"Daiscord2",
+		"Discorda2",
+		"Discored2",
+		"Deiscord2",
+		"Discorde3",
+		"Dissord3",
+		"Discorrd3",
+		"Disord3",
+		"Discrd3",
+		"Disscord3",
+		"Dascord3",
+		"Discorid3",
+		"Diskaord3",
+		"Niscord3",
+		"Dnscord4",
+		"Dincord4",
+		"Disnord4",
+		"Discnrd4",
+		"Discond4",
+		"Discorn4",
+		"Iiscord4",
+		"Diicord4",
+		"Disiord4",
+		"Discird4",
+		"Discori",
+	}
+	for _, s := range spellings {
+		if strings.Contains(u.Host, s) {
+			return true
+		}
+	}
+
+	// lastly, check if the link is similar to the official discord.gifts link
+	similarity := util.CompareTwoLinks("discord.gift", u.Host)
+
+	if similarity > 0.4 {
 		return true
 	}
 	return false
