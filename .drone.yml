@@ -1,0 +1,27 @@
+---
+kind: pipeline
+type: exec
+os: linux
+arch: amd64
+
+name: CD
+
+steps:
+- name: remove old deployed version
+  failure: ignore
+  commands:
+    - docker stop giftDetester
+    - docker rm giftDetester
+    - docker rmi gift-detester
+- name: deploy new docker image
+  commands:
+    - docker build -t gift-detester .
+    - docker run -d --name giftDetester -e BOT_KEY gift-detester
+  environment:
+    BOT_KEY:
+      from_secret: BOT_KEY
+---
+kind: signature
+hmac: 4f6c1b151c22e26f977929dd1e09223b4bd541696228db2facb07d89391806f1
+
+...
