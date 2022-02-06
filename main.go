@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"giftDetester/commands"
 	"giftDetester/logging"
 	"giftDetester/util"
 	"github.com/bwmarrin/discordgo"
@@ -30,6 +31,10 @@ func main() {
 	}
 	log.Println("Successfully established a discord ws connection..")
 	dg.AddHandler(messageCreate)
+
+	// register commands
+	commands.RegisterCommands(dg)
+	log.Println("Registered all Commands successfully...")
 
 	log.Println("On the lookout for fake gift messages..")
 
