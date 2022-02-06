@@ -20,8 +20,11 @@ steps:
   environment:
     BOT_KEY:
       from_secret: BOT_KEY
+trigger:
+  branch:
+    - master
 ---
 kind: signature
-hmac: 4f6c1b151c22e26f977929dd1e09223b4bd541696228db2facb07d89391806f1
+hmac: 8670cefb3bcf874ee90c163741477127348a6b57c88f2087fae80600bd0e327d
 
 ...
