@@ -36,12 +36,13 @@ func main() {
 		log.Fatalf("Could not establish a connection with Discord:\n%s", err)
 	}
 	log.Println("Successfully established a discord ws connection..")
-	dg.AddHandler(messageCreate)
 
 	// register commands
-	commands.RegisterCommands(dg)
+	commands.RegisterCommands(dg, "")
 	log.Println("Registered all Commands successfully...")
 
+	dg.AddHandler(guildCreate)
+	dg.AddHandler(messageCreate)
 	log.Println("On the lookout for fake gift messages..")
 
 	// graceful exit
@@ -83,6 +84,63 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			handleFakeGiftMessage(s, m, l)
 			break
 		}
+	}
+}
+func guildCreate(s *discordgo.Session, c *discordgo.GuildCreate) {
+	// check if has permissions
+	p, _ := s.UserChannelPermissions(s.State.User.ID, c.SystemChannelID)
+	if !(p&discordgo.PermissionManageMessages == discordgo.PermissionManageMessages &&
+		p&discordgo.PermissionCreateInstantInvite == discordgo.PermissionCreateInstantInvite &&
+		p&discordgo.PermissionKickMembers == discordgo.PermissionKickMembers &&
+		p&discordgo.PermissionModerateMembers == discordgo.PermissionModerateMembers &&
+		p&discordgo.PermissionUseSlashCommands == discordgo.PermissionUseSlashCommands &&
+		p&discordgo.PermissionEmbedLinks == discordgo.PermissionEmbedLinks) {
+
+		s.ChannelMessageSendEmbed(c.SystemChannelID, &discordgo.MessageEmbed{
+			Type:  "rich",
+			Title: "Did not receive all relevant permissions",
+			Description: `I need all permissions in order to work correctly.
+						Please add me again with the needed permissions`,
+			Color: 0xff0000,
+			Fields: []*discordgo.MessageEmbedField{
+				&discordgo.MessageEmbedField{
+					Name:   "Manage Messages",
+					Value:  "To delete phishing messages",
+					Inline: false,
+				},
+				&discordgo.MessageEmbedField{
+					Name:   "Create Instant Invites",
+					Value:  "To send members a rejoin link if they get kicked",
+					Inline: false,
+				},
+				&discordgo.MessageEmbedField{
+					Name:   "Kick members",
+					Value:  "To kick members",
+					Inline: false,
+				},
+				&discordgo.MessageEmbedField{
+					Name:   "Moderate members",
+					Value:  "To timeout members",
+					Inline: false,
+				},
+				&discordgo.MessageEmbedField{
+					Name:   "Embed links",
+					Value:  "To Embed links",
+					Inline: false,
+				},
+			},
+		})
+
+		s.GuildLeave(c.ID)
+	} else {
+
+		s.ChannelMessageSendEmbed(c.SystemChannelID, &discordgo.MessageEmbed{
+			Type:        "rich",
+			Title:       "Thanks for inviting me!",
+			Description: `You can configure me with /phishing`,
+			Color:       0x00ff00,
+		})
+		commands.RegisterCommands(s, c.ID)
 	}
 }
 

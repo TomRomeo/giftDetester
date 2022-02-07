@@ -17,11 +17,11 @@ var commands = []*discordgo.ApplicationCommand{
 	},
 }
 
-func RegisterCommands(dg *discordgo.Session) {
+func RegisterCommands(dg *discordgo.Session, guildID string) {
 	for _, v := range commands {
-		_, err := dg.ApplicationCommandCreate(dg.State.User.ID, "", v)
+		_, err := dg.ApplicationCommandCreate(dg.State.User.ID, guildID, v)
 		if err != nil {
-			log.Panicf("Cannot create '%v' command: %v", v.Name, err)
+			log.Println("Cannot create '%v' command: %v", v.Name, err)
 		}
 	}
 	dg.AddHandler(commandHandler)
