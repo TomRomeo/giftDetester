@@ -2,20 +2,18 @@ package logging
 
 import (
 	"fmt"
+	"giftDetester/db"
 	"github.com/bwmarrin/discordgo"
 	"log"
 )
 
 func getLogChannel(s *discordgo.Session, guildID string) *discordgo.Channel {
+	var logChannelID string
 	var logChannel *discordgo.Channel
 
-	channels, _ := s.GuildChannels(guildID)
-	for _, channel := range channels {
-		if channel.Name == "gift-detester-log" {
-			logChannel = channel
-			break
-		}
-	}
+	db.GetServerOption(guildID, "logChannel", &logChannelID)
+	logChannel, _ = s.Channel(logChannelID)
+
 	return logChannel
 }
 func LogAction(s *discordgo.Session, m *discordgo.Message, action string) {
@@ -61,7 +59,7 @@ func SendError(s *discordgo.Session, m *discordgo.MessageCreate, description str
 		}
 	}
 }
-func NotifyUser(s *discordgo.Session, m *discordgo.MessageCreate) {
+func NotifyUser(s *discordgo.Session, m *discordgo.MessageCreate, action string) {
 	ch, _ := s.UserChannelCreate(m.Author.ID)
 
 	guild, _ := s.Guild(m.GuildID)
@@ -80,7 +78,7 @@ func NotifyUser(s *discordgo.Session, m *discordgo.MessageCreate) {
 	e := []*discordgo.MessageEmbed{
 		&discordgo.MessageEmbed{
 			Type:        "rich",
-			Title:       fmt.Sprintf("You have been kicked from %s", guild.Name),
+			Title:       fmt.Sprintf("You have been %sed from %s", action, guild.Name),
 			Description: "Your account has probably been compromised and sent multiple phishing links on this server.",
 			Color:       0xff0000,
 			Footer:      nil,
@@ -105,13 +103,16 @@ func NotifyUser(s *discordgo.Session, m *discordgo.MessageCreate) {
 						Additionally, if you use the same password for other services like Spotify or Netflix, you should change them there as well.`,
 			Color: 0x7289da,
 		},
-		&discordgo.MessageEmbed{
-			Type:  "rich",
-			Title: `"I want to join the server again!"`,
-			Description: `Before rejoining the server, please reset your password. Sending phishing links multiple times might lead to a permanent ban.
+	}
+	if action == "kick" {
+		e = append(e,
+			&discordgo.MessageEmbed{
+				Type:  "rich",
+				Title: `"I want to join the server again!"`,
+				Description: `Before rejoining the server, please reset your password. Sending phishing links multiple times might lead to a permanent ban.
 						If you have changed your password, feel free to join the server again` + maybeLink,
-			Color: 0x7289da,
-		},
+				Color: 0x7289da,
+			})
 	}
 	s.ChannelMessageSendEmbeds(ch.ID, e)
 }

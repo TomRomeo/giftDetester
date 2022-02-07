@@ -36,9 +36,14 @@ func commandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	switch data.Name {
 	case "phishing":
-		phishingActionHandler(s, i)
-	case "logs":
-		logChannelHandler(s, i)
+		data := i.ApplicationCommandData()
+
+		switch data.Options[0].Name {
+		case "action":
+			phishingActionHandler(s, i)
+		case "logs":
+			logChannelHandler(s, i)
+		}
 	}
 
 }

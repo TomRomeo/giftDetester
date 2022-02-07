@@ -1,8 +1,10 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"giftDetester/commands"
+	"giftDetester/db"
 	"giftDetester/logging"
 	"giftDetester/util"
 	"github.com/bwmarrin/discordgo"
@@ -20,6 +22,9 @@ func main() {
 	if err != nil {
 		log.Println("Could not load .env file")
 	}
+
+	// intialize db
+	db.InitializeDb()
 
 	dg, err := discordgo.New("Bot " + os.Getenv("BOT_KEY"))
 	if err != nil {
@@ -171,17 +176,33 @@ func checkFakeGiftLink(l string) bool {
 }
 func handleFakeGiftMessage(s *discordgo.Session, m *discordgo.MessageCreate, l string) {
 
-	// firstly, notify user that they have been hacked
-	logging.NotifyUser(s, m)
+	// gather what action to take
+	var action string
+	err := db.GetServerOption(m.GuildID, "action", &action)
+	if err == sql.ErrNoRows {
+		action = "kick"
+	}
 
+	// firstly, notify user that they have been hacked
+	logging.NotifyUser(s, m, action)
+
+	// delete message
 	if err := s.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
 		logging.SendError(s, m, "Could not delete message, missing permissions?", err)
 	} else {
 		logging.LogAction(s, m.Message, "Deleted Message")
 	}
-	if err := s.GuildMemberDeleteWithReason(m.GuildID, m.Author.ID, fmt.Sprintf("Fake gift link send: %s", l)); err != nil {
-		logging.SendError(s, m, "Could not kick user, missing permissions?", err)
+
+	if action == "kick" {
+
+		if err := s.GuildMemberDeleteWithReason(m.GuildID, m.Author.ID, fmt.Sprintf("Fake gift link send: %s", l)); err != nil {
+			logging.SendError(s, m, "Could not kick user, missing permissions?", err)
+		} else {
+			logging.LogAction(s, m.Message, "Kicked User")
+		}
+
 	} else {
-		logging.LogAction(s, m.Message, "Kicked User")
+
 	}
+
 }
