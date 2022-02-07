@@ -15,6 +15,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 )
 
 func main() {
@@ -202,6 +203,14 @@ func handleFakeGiftMessage(s *discordgo.Session, m *discordgo.MessageCreate, l s
 		}
 
 	} else {
+
+		timeout := time.Now().Add(24 * time.Hour)
+
+		if err := s.GuildMemberTimeout(m.GuildID, m.Author.ID, &timeout); err != nil {
+			logging.SendError(s, m, "Could not timeout user, missing permissions?", err)
+		} else {
+			logging.LogAction(s, m.Message, "Kicked User")
+		}
 
 	}
 
