@@ -23,7 +23,7 @@ steps:
     BUILD: 'PROD'
 trigger:
   branch:
-    - master
+    - main
 ---
 kind: signature
 hmac: b00623ac1e27ebe7afa45fb7eff70e5fb984a444011121c030937bad5e6ffc3b
