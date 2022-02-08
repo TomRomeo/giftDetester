@@ -20,6 +20,12 @@ steps:
   environment:
     BOT_KEY:
       from_secret: BOT_KEY
+    MYSQL_PASSWORD: 
+      from_secret: MYSQL_PASSWORD
+    MYSQL_ROOT_PASSWORD:
+      from_secret: MYSQL_ROOT_PASSWORD
+    MYSQL_USER:
+      from_secret: MYSQL_USER
     BUILD: 'PROD'
 trigger:
   branch:
