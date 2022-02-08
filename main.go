@@ -26,6 +26,7 @@ func main() {
 
 	// intialize db
 	db.InitializeDb()
+	log.Println("Connected to database")
 
 	dg, err := discordgo.New("Bot " + os.Getenv("BOT_KEY"))
 	if err != nil {

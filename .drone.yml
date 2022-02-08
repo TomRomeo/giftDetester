@@ -7,24 +7,25 @@ arch: amd64
 name: CD
 
 steps:
-- name: remove old deployed version
+- name: stop containers
+  commands:
+    - docker-compose down
   failure: ignore
+- name: update images
   commands:
-    - docker stop giftDetester
-    - docker rm giftDetester
-    - docker rmi gift-detester
-- name: deploy new docker image
+    - docker-compose pull
+- name: deploy containers
   commands:
-    - docker build -t gift-detester .
-    - docker run -d --name giftDetester -e BOT_KEY gift-detester
+    - docker-compose up -d --build
   environment:
     BOT_KEY:
       from_secret: BOT_KEY
+    BUILD: 'PROD'
 trigger:
   branch:
     - master
 ---
 kind: signature
-hmac: 8670cefb3bcf874ee90c163741477127348a6b57c88f2087fae80600bd0e327d
+hmac: b00623ac1e27ebe7afa45fb7eff70e5fb984a444011121c030937bad5e6ffc3b
 
 ...
