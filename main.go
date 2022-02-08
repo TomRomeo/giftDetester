@@ -1,7 +1,10 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
+	"giftDetester/commands"
+	"giftDetester/db"
 	"giftDetester/logging"
 	"giftDetester/util"
 	"github.com/bwmarrin/discordgo"
@@ -12,6 +15,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 )
 
 func main() {
@@ -19,6 +23,10 @@ func main() {
 	if err != nil {
 		log.Println("Could not load .env file")
 	}
+
+	// intialize db
+	db.InitializeDb()
+	log.Println("Connected to database")
 
 	dg, err := discordgo.New("Bot " + os.Getenv("BOT_KEY"))
 	if err != nil {
@@ -29,8 +37,13 @@ func main() {
 		log.Fatalf("Could not establish a connection with Discord:\n%s", err)
 	}
 	log.Println("Successfully established a discord ws connection..")
-	dg.AddHandler(messageCreate)
 
+	// register commands
+	commands.RegisterCommands(dg, "")
+	log.Println("Registered all Commands successfully...")
+
+	dg.AddHandler(guildCreate)
+	dg.AddHandler(messageCreate)
 	log.Println("On the lookout for fake gift messages..")
 
 	// graceful exit
@@ -72,6 +85,63 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			handleFakeGiftMessage(s, m, l)
 			break
 		}
+	}
+}
+func guildCreate(s *discordgo.Session, c *discordgo.GuildCreate) {
+	// check if has permissions
+	p, _ := s.UserChannelPermissions(s.State.User.ID, c.SystemChannelID)
+	if !(p&discordgo.PermissionManageMessages == discordgo.PermissionManageMessages &&
+		p&discordgo.PermissionCreateInstantInvite == discordgo.PermissionCreateInstantInvite &&
+		p&discordgo.PermissionKickMembers == discordgo.PermissionKickMembers &&
+		p&discordgo.PermissionModerateMembers == discordgo.PermissionModerateMembers &&
+		p&discordgo.PermissionUseSlashCommands == discordgo.PermissionUseSlashCommands &&
+		p&discordgo.PermissionEmbedLinks == discordgo.PermissionEmbedLinks) {
+
+		s.ChannelMessageSendEmbed(c.SystemChannelID, &discordgo.MessageEmbed{
+			Type:  "rich",
+			Title: "Did not receive all relevant permissions",
+			Description: `I need all permissions in order to work correctly.
+						Please add me again with the needed permissions`,
+			Color: 0xff0000,
+			Fields: []*discordgo.MessageEmbedField{
+				&discordgo.MessageEmbedField{
+					Name:   "Manage Messages",
+					Value:  "To delete phishing messages",
+					Inline: false,
+				},
+				&discordgo.MessageEmbedField{
+					Name:   "Create Instant Invites",
+					Value:  "To send members a rejoin link if they get kicked",
+					Inline: false,
+				},
+				&discordgo.MessageEmbedField{
+					Name:   "Kick members",
+					Value:  "To kick members",
+					Inline: false,
+				},
+				&discordgo.MessageEmbedField{
+					Name:   "Moderate members",
+					Value:  "To timeout members",
+					Inline: false,
+				},
+				&discordgo.MessageEmbedField{
+					Name:   "Embed links",
+					Value:  "To Embed links",
+					Inline: false,
+				},
+			},
+		})
+
+		s.GuildLeave(c.ID)
+	} else {
+
+		s.ChannelMessageSendEmbed(c.SystemChannelID, &discordgo.MessageEmbed{
+			Type:        "rich",
+			Title:       "Thanks for inviting me!",
+			Description: `You can configure me with /phishing`,
+			Color:       0x00ff00,
+		})
+		commands.RegisterCommands(s, c.ID)
 	}
 }
 
@@ -166,17 +236,41 @@ func checkFakeGiftLink(l string) bool {
 }
 func handleFakeGiftMessage(s *discordgo.Session, m *discordgo.MessageCreate, l string) {
 
-	// firstly, notify user that they have been hacked
-	logging.NotifyUser(s, m)
+	// gather what action to take
+	var action string
+	err := db.GetServerOption(m.GuildID, "action", &action)
+	if err == sql.ErrNoRows {
+		action = "kick"
+	}
 
+	// firstly, notify user that they have been hacked
+	logging.NotifyUser(s, m, action)
+
+	// delete message
 	if err := s.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
 		logging.SendError(s, m, "Could not delete message, missing permissions?", err)
 	} else {
 		logging.LogAction(s, m.Message, "Deleted Message")
 	}
-	if err := s.GuildMemberDeleteWithReason(m.GuildID, m.Author.ID, fmt.Sprintf("Fake gift link send: %s", l)); err != nil {
-		logging.SendError(s, m, "Could not kick user, missing permissions?", err)
+
+	if action == "kick" {
+
+		if err := s.GuildMemberDeleteWithReason(m.GuildID, m.Author.ID, fmt.Sprintf("Fake gift link send: %s", l)); err != nil {
+			logging.SendError(s, m, "Could not kick user, missing permissions?", err)
+		} else {
+			logging.LogAction(s, m.Message, "Kicked User")
+		}
+
 	} else {
-		logging.LogAction(s, m.Message, "Kicked User")
+
+		timeout := time.Now().Add(24 * time.Hour)
+
+		if err := s.GuildMemberTimeout(m.GuildID, m.Author.ID, &timeout); err != nil {
+			logging.SendError(s, m, "Could not timeout user, missing permissions?", err)
+		} else {
+			logging.LogAction(s, m.Message, "Kicked User")
+		}
+
 	}
+
 }

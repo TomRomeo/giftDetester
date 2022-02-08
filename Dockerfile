@@ -3,9 +3,15 @@
 FROM golang:1.17.6-alpine
 WORKDIR /build
 
-COPY . .
 
-RUN go get .
+RUN apk add build-base
+# Install dependencies
+# Thanks to @montanaflynn
+# https://github.com/montanaflynn/golang-docker-cache
+COPY go.mod go.sum ./
+RUN go mod graph | awk '{if ($1 !~ "@") print $2}' | xargs go get
+
+COPY . .
 
 RUN go build -o /giftDetester
 ENTRYPOINT [ "/giftDetester" ]
