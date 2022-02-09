@@ -43,6 +43,7 @@ func main() {
 	log.Println("Registered all Commands successfully...")
 
 	dg.AddHandler(guildCreate)
+	dg.AddHandler(guildDelete)
 	dg.AddHandler(messageCreate)
 	log.Println("On the lookout for fake gift messages..")
 
@@ -142,6 +143,11 @@ func guildCreate(s *discordgo.Session, c *discordgo.GuildCreate) {
 			Color:       0x00ff00,
 		})
 		commands.RegisterCommands(s, c.ID)
+	}
+}
+func guildDelete(s *discordgo.Session, c *discordgo.GuildDelete) {
+	if err := db.RemoveServer(c.ID); err != nil {
+		log.Printf("Error occurred when trying to delete guild from db:\n%s", err)
 	}
 }
 
