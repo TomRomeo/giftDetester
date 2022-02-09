@@ -56,3 +56,7 @@ func SetServerOption(guildID, option, optionValue string) error {
 	_, err := dbase.Exec(fmt.Sprintf("REPLACE INTO guilds (guildID, %s) VALUES(?, ?);", option), guildID, optionValue)
 	return err
 }
+func RemoveServer(guildID string) error {
+	_, err := dbase.Exec("DELETE FROM guilds WHERE guildID = ?", guildID)
+	return err
+}

@@ -43,6 +43,7 @@ func main() {
 	log.Println("Registered all Commands successfully...")
 
 	dg.AddHandler(guildCreate)
+	dg.AddHandler(guildDelete)
 	dg.AddHandler(messageCreate)
 	log.Println("On the lookout for fake gift messages..")
 
@@ -144,6 +145,11 @@ func guildCreate(s *discordgo.Session, c *discordgo.GuildCreate) {
 		commands.RegisterCommands(s, c.ID)
 	}
 }
+func guildDelete(s *discordgo.Session, c *discordgo.GuildDelete) {
+	if err := db.RemoveServer(c.ID); err != nil {
+		log.Printf("Error occurred when trying to delete guild from db:\n%s", err)
+	}
+}
 
 func checkFakeGiftLink(l string) bool {
 	// we only care about the domain, not the path after
@@ -239,7 +245,7 @@ func handleFakeGiftMessage(s *discordgo.Session, m *discordgo.MessageCreate, l s
 	// gather what action to take
 	var action string
 	err := db.GetServerOption(m.GuildID, "action", &action)
-	if err == sql.ErrNoRows {
+	if err == sql.ErrNoRows || action == "" {
 		action = "kick"
 	}
 
