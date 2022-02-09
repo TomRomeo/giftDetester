@@ -245,7 +245,7 @@ func handleFakeGiftMessage(s *discordgo.Session, m *discordgo.MessageCreate, l s
 	// gather what action to take
 	var action string
 	err := db.GetServerOption(m.GuildID, "action", &action)
-	if err == sql.ErrNoRows {
+	if err == sql.ErrNoRows || action == "" {
 		action = "kick"
 	}
 
