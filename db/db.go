@@ -53,7 +53,7 @@ func GetServerOption(guildID, option string, passTo interface{}) error {
 	return row.Scan(passTo)
 }
 func SetServerOption(guildID, option, optionValue string) error {
-	_, err := dbase.Exec(fmt.Sprintf("REPLACE INTO guilds (guildID, %s) VALUES(?, ?);", option), guildID, optionValue)
+	_, err := dbase.Exec(fmt.Sprintf("INSERT INTO guilds (guildID, %s) VALUES(?, ?) ON DUPLICATE KEY UPDATE %s=VALUES(%s);", option, option, option), guildID, optionValue)
 	return err
 }
 func RemoveServer(guildID string) error {
