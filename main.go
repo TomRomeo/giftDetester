@@ -296,7 +296,7 @@ func handleFakeGiftMessage(s *discordgo.Session, m *discordgo.MessageCreate, l s
 		if err := s.GuildMemberTimeout(m.GuildID, m.Author.ID, &timeout); err != nil {
 			logging.SendError(s, m, "Could not timeout user, missing permissions?", err)
 		} else {
-			logging.LogAction(s, m.Message, "Kicked User")
+			logging.LogAction(s, m.Message, "Timeouted User")
 		}
 
 	}
