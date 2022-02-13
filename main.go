@@ -159,7 +159,6 @@ func guildCreate(s *discordgo.Session, c *discordgo.GuildCreate) {
 				Description: `You can configure me with /phishing`,
 				Color:       0x00ff00,
 			})
-			commands.RegisterCommands(s, c.ID)
 		}
 	}
 
