@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 )
 
@@ -60,7 +61,8 @@ func ExtractLinks(s string) []string {
 	var links []string
 	words := strings.Split(s, " ")
 	for _, w := range words {
-		if strings.Contains(w, "http") {
+		u, err := url.Parse(w)
+		if u != nil && err == nil {
 			links = append(links, w)
 		}
 	}
