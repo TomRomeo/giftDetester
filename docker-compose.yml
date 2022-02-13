@@ -12,6 +12,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     depends_on:
       - db
+    restart: "always"
 
   db:
     image: mysql
@@ -25,5 +26,6 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - bot-data:/var/lib/mysql
+    restart: "always"
 volumes:
   bot-data:
