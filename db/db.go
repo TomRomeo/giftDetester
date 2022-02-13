@@ -43,7 +43,7 @@ func InitializeDb() {
 	}
 	dbase = *db
 
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS guilds (guildID VARCHAR(255) not null primary key, action TEXT, logChannel TEXT)`)
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS guilds (guildID VARCHAR(255) not null primary key, action TEXT, logChannel TEXT, timeoutDuration TEXT)`)
 	if err != nil {
 		log.Fatalf("Could not create database table:\n%s", err)
 	}

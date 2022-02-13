@@ -13,6 +13,7 @@ var commands = []*discordgo.ApplicationCommand{
 		Options: []*discordgo.ApplicationCommandOption{
 			phishingActionCommand,
 			logChannelCommand,
+			timeoutDurationCommand,
 		},
 	},
 }
@@ -43,6 +44,8 @@ func commandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			phishingActionHandler(s, i)
 		case "logs":
 			logChannelHandler(s, i)
+		case "duration":
+			timeoutDurationHandler(s, i)
 		}
 	}
 

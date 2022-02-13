@@ -288,7 +288,11 @@ func handleFakeGiftMessage(s *discordgo.Session, m *discordgo.MessageCreate, l s
 
 	} else {
 
-		timeout := time.Now().Add(24 * time.Hour)
+		// default is 24h
+		duration := 1440
+		db.GetServerOption(m.GuildID, "timeoutDuration", &duration)
+
+		timeout := time.Now().Add(time.Duration(duration) * time.Minute)
 
 		if err := s.GuildMemberTimeout(m.GuildID, m.Author.ID, &timeout); err != nil {
 			logging.SendError(s, m, "Could not timeout user, missing permissions?", err)
