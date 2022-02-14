@@ -32,6 +32,7 @@ func logChannelHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			choice := data.Options[0].ChannelValue(s)
 			if err := db.SetServerOption(i.GuildID, "logChannel", choice.ID); err != nil {
 				log.Printf("Got Error when trying to set server option:\n%s", err)
+				return
 			}
 
 			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{

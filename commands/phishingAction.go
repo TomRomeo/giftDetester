@@ -44,6 +44,7 @@ func phishingActionHandler(s *discordgo.Session, i *discordgo.InteractionCreate)
 
 			if err := db.SetServerOption(i.GuildID, "action", choice); err != nil {
 				log.Printf("Got Error when trying to set server option:\n%s", err)
+				return
 			}
 
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{

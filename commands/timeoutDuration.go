@@ -52,10 +52,12 @@ func timeoutDurationHandler(s *discordgo.Session, i *discordgo.InteractionCreate
 						},
 					},
 				})
+				return
 			}
 
 			if err := db.SetServerOption(i.GuildID, "timeoutDuration", string(duration)); err != nil {
 				log.Printf("Got Error when trying to set server option:\n%s", err)
+				return
 			}
 
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
