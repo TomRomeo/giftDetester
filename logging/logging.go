@@ -41,7 +41,7 @@ func LogAction(s *discordgo.Session, m *discordgo.Message, action string) {
 	}
 }
 
-func SendError(s *discordgo.Session, m *discordgo.MessageCreate, description string, err error) {
+func SendError(s *discordgo.Session, m *discordgo.Message, description string, err error) {
 	e := &discordgo.MessageEmbed{
 		Type:        "rich",
 		Title:       "Woops, an error occurred!",
@@ -59,7 +59,7 @@ func SendError(s *discordgo.Session, m *discordgo.MessageCreate, description str
 		}
 	}
 }
-func NotifyUser(s *discordgo.Session, m *discordgo.MessageCreate, action string) {
+func NotifyUser(s *discordgo.Session, m *discordgo.Message, action string) {
 	ch, _ := s.UserChannelCreate(m.Author.ID)
 
 	guild, _ := s.Guild(m.GuildID)

@@ -44,6 +44,7 @@ func main() {
 	dg.AddHandler(guildCreate)
 	dg.AddHandler(guildDelete)
 	dg.AddHandler(messageCreate)
+	dg.AddHandler(messageUpdate)
 	log.Println("On the lookout for fake gift messages..")
 
 	// graceful exit
@@ -82,7 +83,38 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// check each link
 	for _, l := range links {
 		if checkFakeGiftLink(l) {
-			handleFakeGiftMessage(s, m, l)
+			handleFakeGiftMessage(s, m.Message, l)
+			break
+		}
+	}
+}
+
+func messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) {
+
+	// ignore own messages
+	if m.Author.ID == s.State.User.ID {
+		return
+	}
+
+	var links []string
+
+	// extract links from message
+	links = append(links, util.ExtractLinks(m.Message.Content)...)
+
+	// also gather embed links
+	for _, e := range m.Embeds {
+		links = append(links, e.URL)
+		links = append(links, util.ExtractLinks(e.Description)...)
+
+		for _, f := range e.Fields {
+			links = append(links, util.ExtractLinks(f.Value)...)
+		}
+	}
+
+	// check each link
+	for _, l := range links {
+		if checkFakeGiftLink(l) {
+			handleFakeGiftMessage(s, m.Message, l)
 			break
 		}
 	}
@@ -258,7 +290,7 @@ func checkFakeGiftLink(l string) bool {
 	}
 	return false
 }
-func handleFakeGiftMessage(s *discordgo.Session, m *discordgo.MessageCreate, l string) {
+func handleFakeGiftMessage(s *discordgo.Session, m *discordgo.Message, l string) {
 
 	// gather what action to take
 	var action string
@@ -274,7 +306,7 @@ func handleFakeGiftMessage(s *discordgo.Session, m *discordgo.MessageCreate, l s
 	if err := s.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
 		logging.SendError(s, m, "Could not delete message, missing permissions?", err)
 	} else {
-		logging.LogAction(s, m.Message, "Deleted Message")
+		logging.LogAction(s, m, "Deleted Message")
 	}
 
 	if action == "kick" {
@@ -282,7 +314,7 @@ func handleFakeGiftMessage(s *discordgo.Session, m *discordgo.MessageCreate, l s
 		if err := s.GuildMemberDeleteWithReason(m.GuildID, m.Author.ID, fmt.Sprintf("Fake gift link send: %s", l)); err != nil {
 			logging.SendError(s, m, "Could not kick user, missing permissions?", err)
 		} else {
-			logging.LogAction(s, m.Message, "Kicked User")
+			logging.LogAction(s, m, "Kicked User")
 		}
 
 	} else {
@@ -296,7 +328,7 @@ func handleFakeGiftMessage(s *discordgo.Session, m *discordgo.MessageCreate, l s
 		if err := s.GuildMemberTimeout(m.GuildID, m.Author.ID, &timeout); err != nil {
 			logging.SendError(s, m, "Could not timeout user, missing permissions?", err)
 		} else {
-			logging.LogAction(s, m.Message, "Timeouted User")
+			logging.LogAction(s, m, "Timeouted User")
 		}
 
 	}
