@@ -13,7 +13,10 @@ var logChannelCommand = &discordgo.ApplicationCommandOption{
 	Description: "Configure a log channel for Gift De(tester)",
 	Options: []*discordgo.ApplicationCommandOption{
 		{
-			Type:        discordgo.ApplicationCommandOptionChannel,
+			Type: discordgo.ApplicationCommandOptionChannel,
+			ChannelTypes: []discordgo.ChannelType{
+				discordgo.ChannelTypeGuildText,
+			},
 			Name:        "logchannel",
 			Description: "The logchannel",
 			Required:    true,
