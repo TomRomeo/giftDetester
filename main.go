@@ -92,7 +92,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 func messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) {
 
 	// ignore own messages
-	if m.Author.ID == s.State.User.ID {
+	if m.Author != nil && m.Author.ID == s.State.User.ID {
 		return
 	}
 
