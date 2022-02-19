@@ -184,20 +184,28 @@ func guildCreate(s *discordgo.Session, c *discordgo.GuildCreate) {
 			s.GuildLeave(c.ID)
 
 		} else {
+			// to only send the message on initial join, since the guildcreate event seems to happen not only on guild join :')
+			if time.Now().Add(-5 * time.Minute).Before(c.JoinedAt) {
 
-			s.ChannelMessageSendEmbed(c.SystemChannelID, &discordgo.MessageEmbed{
-				Type:        "rich",
-				Title:       "Thanks for inviting me!",
-				Description: `You can configure me with /phishing`,
-				Color:       0x00ff00,
-			})
+				s.ChannelMessageSendEmbed(c.SystemChannelID, &discordgo.MessageEmbed{
+					Type:        "rich",
+					Title:       "Thanks for inviting me!",
+					Description: `You can configure me with /phishing`,
+					Color:       0x00ff00,
+				})
+			}
 		}
 	}
 
 }
 func guildDelete(s *discordgo.Session, c *discordgo.GuildDelete) {
-	if err := db.RemoveServer(c.ID); err != nil {
-		log.Printf("Error occurred when trying to delete guild from db:\n%s", err)
+
+	// to only delete guild settings, when the bot get's kicked, not when the guild becomes unavailable
+	if c.Unavailable == false {
+
+		if err := db.RemoveServer(c.ID); err != nil {
+			log.Printf("Error occurred when trying to delete guild from db:\n%s", err)
+		}
 	}
 }
 
