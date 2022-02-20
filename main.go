@@ -213,6 +213,11 @@ func checkFakeGiftLink(l string) bool {
 	// we only care about the domain, not the path after
 	u, _ := url.Parse(l)
 
+	// removing any subdomains
+	// media.discordapp.net -> discordapp.net
+	parts := strings.Split(u.Hostname(), ".")
+	domain := parts[len(parts)-2] + "." + parts[len(parts)-1]
+
 	// firstly, return no if message is definitely from a Discord owned domain
 	dcDomains := map[string]bool{
 		"discord.com":       true,
@@ -223,7 +228,7 @@ func checkFakeGiftLink(l string) bool {
 		"discordstatus.com": true,
 		"discord.gift":      true,
 	}
-	if dcDomains[u.Host] {
+	if dcDomains[domain] {
 		return false
 	}
 
@@ -291,7 +296,7 @@ func checkFakeGiftLink(l string) bool {
 	}
 
 	// lastly, check if the link is similar to the official discord.gifts link
-	similarity := util.CompareTwoLinks("discord.gift", u.Host)
+	similarity := util.CompareTwoLinks("discord.gift", domain)
 
 	if similarity > 0.4 {
 		return true
