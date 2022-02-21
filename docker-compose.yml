@@ -12,7 +12,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     depends_on:
       - db
-    restart: "always"
+    restart: "on-failure:5"
 
   db:
     image: mysql
