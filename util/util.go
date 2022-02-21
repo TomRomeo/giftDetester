@@ -62,7 +62,8 @@ func ExtractLinks(s string) []string {
 	words := strings.Split(s, " ")
 	for _, w := range words {
 		u, err := url.Parse(w)
-		if u != nil && err == nil && len(u.Host) > 0 {
+		parts := strings.Split(u.Host, ".")
+		if u != nil && err == nil && len(parts) > 1 {
 			links = append(links, w)
 		}
 	}
