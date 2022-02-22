@@ -9,8 +9,8 @@ import (
 	"giftDetester/util"
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
+	"github.com/weppos/publicsuffix-go/publicsuffix"
 	"log"
-	"net/url"
 	"os"
 	"os/signal"
 	"strings"
@@ -210,14 +210,13 @@ func guildDelete(s *discordgo.Session, c *discordgo.GuildDelete) {
 }
 
 func checkFakeGiftLink(l string) bool {
-	// we only care about the domain, not the path after
-	u, _ := url.Parse(l)
 
 	// removing any subdomains
 	// media.discordapp.net -> discordapp.net
-	parts := strings.Split(u.Hostname(), ".")
-	log.Println(parts)
-	domain := parts[len(parts)-2] + "." + parts[len(parts)-1]
+	dn, err := publicsuffix.Parse(l)
+	if err != nil {
+		return false
+	}
 
 	// firstly, return no if message is definitely from a Discord owned domain
 	dcDomains := map[string]bool{
@@ -229,7 +228,7 @@ func checkFakeGiftLink(l string) bool {
 		"discordstatus.com": true,
 		"discord.gift":      true,
 	}
-	if dcDomains[domain] {
+	if dcDomains[dn.SLD+"."+dn.TLD] {
 		return false
 	}
 
@@ -291,13 +290,17 @@ func checkFakeGiftLink(l string) bool {
 		"Discori",
 	}
 	for _, s := range spellings {
-		if strings.Contains(u.Host, s) {
+		if strings.Contains(dn.SLD, s) {
+			return true
+		}
+		similarity := util.CompareTwoLinks(s, dn.SLD)
+		if similarity > 0.6 {
 			return true
 		}
 	}
 
 	// lastly, check if the link is similar to the official discord.gifts link
-	similarity := util.CompareTwoLinks("discord.gift", domain)
+	similarity := util.CompareTwoLinks("discord.gift", dn.SLD+"."+dn.TLD)
 
 	if similarity > 0.4 {
 		return true

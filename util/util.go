@@ -2,9 +2,7 @@ package util
 
 import (
 	"fmt"
-	"log"
-	"net/url"
-	"strings"
+	"regexp"
 )
 
 func CompareTwoLinks(linkOne, linkTwo string) float32 {
@@ -59,22 +57,16 @@ func CompareTwoLinks(linkOne, linkTwo string) float32 {
 }
 
 func ExtractLinks(s string) []string {
-	var links []string
 
-	if !strings.Contains(s, "http") {
-		return links
+	links := []string{}
+	// https?:\/\/((?:[\w,-,_,~]+\.)*[\w,-,_]+\.\w+)
+	r := regexp.MustCompile("https?:\\/\\/((?:[\\w,-,_,~]+\\.)*[\\w,-,_]+\\.\\w+)")
+
+	matches := r.FindAllStringSubmatch(s, -1)
+	for _, m := range matches {
+		links = append(links, m[1])
 	}
-	words := strings.Split(s, " ")
-	for _, w := range words {
-		log.Println(w)
-		u, err := url.ParseRequestURI(w)
-		if u != nil && err == nil {
-			parts := strings.Split(u.Host, ".")
-			if len(parts) > 1 {
-				links = append(links, w)
-			}
-		}
-	}
+
 	return links
 
 }
