@@ -216,6 +216,7 @@ func checkFakeGiftLink(l string) bool {
 	// removing any subdomains
 	// media.discordapp.net -> discordapp.net
 	parts := strings.Split(u.Hostname(), ".")
+	log.Println(parts)
 	domain := parts[len(parts)-2] + "." + parts[len(parts)-1]
 
 	// firstly, return no if message is definitely from a Discord owned domain
