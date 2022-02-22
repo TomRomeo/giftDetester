@@ -60,7 +60,11 @@ func SendError(s *discordgo.Session, m *discordgo.Message, description string, e
 	}
 }
 func NotifyUser(s *discordgo.Session, m *discordgo.Message, action string) {
-	ch, _ := s.UserChannelCreate(m.Author.ID)
+	ch, err := s.UserChannelCreate(m.Author.ID)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
 	guild, _ := s.Guild(m.GuildID)
 	i, err := s.ChannelInviteCreate(guild.SystemChannelID, discordgo.Invite{
