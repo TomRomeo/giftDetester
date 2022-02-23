@@ -13,7 +13,12 @@ func TestCompareTwoLinks(t *testing.T) {
 
 	similarity = CompareTwoLinks("", "https://discord.com")
 	if similarity != 0 {
-		t.Errorf("Comparint one link with an empty string should return a similarity of 0")
+		t.Errorf("Comparing one link with an empty string should return a similarity of 0")
+	}
+
+	similarity = CompareTwoLinks("https://dlscord.com", "https://discord.com")
+	if similarity < 0.5 {
+		t.Errorf("Comparint one links with only one character difference should return a high similarity")
 	}
 
 }
