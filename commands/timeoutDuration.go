@@ -5,6 +5,7 @@ import (
 	"giftDetester/db"
 	"github.com/bwmarrin/discordgo"
 	"log"
+	"strconv"
 )
 
 var timeoutDurationCommand = &discordgo.ApplicationCommandOption{
@@ -55,7 +56,7 @@ func timeoutDurationHandler(s *discordgo.Session, i *discordgo.InteractionCreate
 				return
 			}
 
-			if err := db.SetServerOption(i.GuildID, "timeoutDuration", string(duration)); err != nil {
+			if err := db.SetServerOption(i.GuildID, "timeoutDuration", strconv.FormatInt(duration, 10)); err != nil {
 				log.Printf("Got Error when trying to set server option:\n%s", err)
 				return
 			}

@@ -26,7 +26,7 @@ func InitializeDb() {
 
 			db, err = sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(db:3306)/db", username, passwd))
 			if err != nil {
-				log.Fatalf("Could not open a connection the the database:\n", err)
+				log.Fatal("Could not open a connection the the database:\n", err)
 			}
 			if err = db.Ping(); err == nil {
 				break
@@ -38,7 +38,7 @@ func InitializeDb() {
 	} else {
 		db, err = sql.Open("sqlite3", "db.sqlite")
 		if err != nil {
-			log.Fatalf("Could not open a connection the the database:\n", err)
+			log.Fatal("Could not open a connection the the database:\n", err)
 		}
 	}
 	dbase = *db
