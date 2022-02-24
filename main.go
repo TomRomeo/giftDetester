@@ -218,7 +218,7 @@ func checkFakeGiftLink(l string) bool {
 		return false
 	}
 
-	// firstly, return no if message is definitely from a Discord owned domain
+	// firstly, return no if message is definitely from a Discord owned domain or a similar domain that is legit
 	dcDomains := map[string]bool{
 		"discord.com":       true,
 		"discord.gg":        true,
@@ -227,6 +227,7 @@ func checkFakeGiftLink(l string) bool {
 		"discordapp.net":    true,
 		"discordstatus.com": true,
 		"discord.gift":      true,
+		"disboard.org":      true,
 	}
 	if dcDomains[dn.SLD+"."+dn.TLD] {
 		return false
