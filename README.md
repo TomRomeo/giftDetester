@@ -23,11 +23,10 @@ the bot will delete the message and take the configured action.
 ## Configuration
 You can configure different actions for what to do with the compromised user
 1. Kicking the user, sending them an invite to re-join after they reset their password (default)
-2. Timeouting the user for 24h, giving them time to reset their password without kicking them from the server.
+2. Timeouting the user for a configured period of time, giving them the possibility to reset their password without kicking them from the server.
 
 ## Logging
 this bot also logs all the bans and deleted messages for reference.
-At the moment, logging will only happen in a channel with the name 'gift-detester-log'.
 
 
 ## "I want to add this bot to my server!"
