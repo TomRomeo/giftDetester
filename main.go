@@ -72,7 +72,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// also gather embed links
 	for _, e := range m.Embeds {
-		links = append(links, e.URL)
+		links = append(links, util.ExtractLinks(e.URL)...)
 		links = append(links, util.ExtractLinks(e.Description)...)
 
 		for _, f := range e.Fields {
