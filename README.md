@@ -2,7 +2,7 @@
 A Discord bot to remove malicious discord gift links
 
 ## Invitation link
-[Invite the bot to my server](https://discord.com/api/oauth2/authorize?client_id=939443581603696650&permissions=10243&scope=bot%20applications.commands)  
+[Invite the bot to your server](https://discord.com/api/oauth2/authorize?client_id=939443581603696650&permissions=10243&scope=bot%20applications.commands)  
 
 Alternatively, you can also host this bot yourself!
 
